@@ -65,10 +65,14 @@ var TaxRoom = ``; // روم الضريبه التلقائيه
 const VoiceChannel = ""; // روم الفويس
 var BoostRoom = ``; // حط هنا ايدي روم البوست
 var TransferRoom = ``; // روم التحويلات
-var blacklistWords = ['','',''] 
+var blacklistWords = ['','',''] // حط الكلمات الممنوعه المسبات والمنتجات والخ اشياء ضد قوانين السيرفر وضد قوانين سيرفرك 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const FeedBackRoom = ""; // ايدي روم الاراء
 const clientID = ""; // ايدي رول العميل
+var EventsRole = ``; // ايدي رول الفعاليات
+var NewsRoleId = ``; // ايدي رول الاخبار
+var GiveawayRoleId = ``;// ايدي رول الجيف اويات
+
 
 // <====== Auto Command & message =======> \\
 
@@ -492,4 +496,276 @@ link Server Link : ${inv.url}
           });
       });
   }
+});
+
+
+/ <========== ping command ==========> \\
+
+client.on("messageCreate", async (message) => {
+  if (!message.guild || message.author.bot) return;
+  const command = message.content.split(" ")[0];
+  if (command == prefix + "ping") {
+    const msg = Date.now() - message.createdTimestamp;
+    const api = Math.round(client.ws.ping);
+    let states = "🟢 Excellent";
+    let states2 = "🟢 Excellent";
+    if (Number(msg) > 70) states = "🟢 Good";
+    if (Number(msg) > 170) states = "🟡 Not Bad";
+    if (Number(msg) > 350) states = "🔴 Soo Bad";
+    if (Number(api) > 70) states2 = "🟢 Good";
+    if (Number(api) > 170) states2 = "🟡 Not Bad";
+    if (Number(api) > 350) states2 = "🔴 Soo Bad";
+    const embed = new MessageEmbed()
+      .setAuthor({
+        name: `${client.user.username}`,
+        iconURL: `${client.user.avatarURL({ format: "png" })}`,
+      })
+      .addField("**Time Taken:**", msg + " ms , " + states, true)
+      .addField("**WebSocket:**", api + " ms 📶 | " + states2, true)
+      .setFooter({ text: `${message.guild.name}` })
+      .setTimestamp();
+    message.channel.send({ embeds: [embed] }).catch((err) => {
+      return;
+    });
+  }
+});
+
+// <========== Embed Command ==========> \\
+
+client.on("messageCreate", async (message) => {
+  if (message.author.bot || !message.guild) return;
+
+  if (message.content.startsWith(prefix + "embed")) {
+    if (!message.member.permissions.has("ADMINISTRATOR")) {
+      return message.reply(
+        `> ⚠️ | ** You Don’t Have Premission**`,
+      );
+    }
+    const args = message.content.slice(prefix.length + "embed".length).trim();
+
+    if (!args)
+      return message.reply(
+        "> ⚠️ | **Please type a message**",
+      );
+
+    try {
+      await message.delete();
+
+      const attach = message.attachments.first();
+      const embed = new MessageEmbed()
+        .setTitle("**Velros**")
+        .setDescription(`**${args}**`)
+        .setFooter({
+          text: `Velros`,
+          iconURL: message.guild.iconURL(),
+        })
+        .setTimestamp()
+        .setColor(color || "#000000")
+        .setThumbnail(message.guild.iconURL());
+
+      if (attach) {
+        embed.setImage(attach.proxyURL);
+      }
+
+      await message.channel.send({ embeds: [embed] });
+    } catch (error) {
+      console.error("Error sending embed:", error);
+      message.channel.send(
+        "> ⚠️ | **Failed to send embed.**",
+      );
+    }
+  }
+});
+
+// <========== Tax Command ==========> \\
+
+client.on("messageCreate", async (message) => {
+  if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+  const args = message.content.slice(prefix.length).trim().split(/ +/);
+  const command = args.shift().toLowerCase();
+
+  if (command === "tax") {
+    let args1 = message.content.split(" ").slice(1).join(" ");
+    if (args1.endsWith("m")) args1 = args1.replace(/m/gi, "") * 1000000;
+    else if (args1.endsWith("k")) args1 = args1.replace(/k/gi, "") * 1000;
+    else if (args1.endsWith("M")) args1 = args1.replace(/M/gi, "") * 1000000;
+    else if (args1.endsWith("K")) args1 = args1.replace(/K/gi, "") * 1000;
+    else if (args1.endsWith("b")) args1 = args1.replace(/b/gi, "") * 1000000000;
+    else if (args1.endsWith("B")) args1 = args1.replace(/B/gi, "") * 1000000000;
+
+    let args2 = parseInt(args1);
+    let tax = Math.floor((args2 * 20) / 19 + 1);
+    let tax2 = Math.floor((args2 * 20) / 19 + 1 - args2);
+    let tax3 = Math.floor((tax2 * 20) / 19 + 1);
+    let tax4 = Math.floor(tax2 + tax3 + args2);
+
+    if (!args2 || isNaN(args2) || args2 < 1) {
+      return message.reply(
+        "> ** Error: Input Must Be A Valid Number Greater Than 1 ⚠⚠ **",
+      );
+    }
+
+    let row = new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId("tax_mediator") // تعديل معرف الزر
+        .setLabel("Mediator")
+        .setEmoji("👮")
+        .setStyle("SUCCESS"),
+    );
+
+    let row2 = new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId("tax_back") // تعديل معرف الزر
+        .setLabel("Back")
+        .setEmoji("↩️")
+        .setStyle("DANGER"),
+    );
+
+    let m = await message.reply({
+      content: `> **  Your Tax Is: __${tax}__**`,
+      components: [row],
+    });
+
+    let collector = m.createMessageComponentCollector({
+      filter: (i) => i.user.id === message.author.id,
+      time: 3600000,
+      max: 2,
+    });
+
+    collector.on("collect", async (i) => {
+      if (i.customId === "tax_mediator") {
+        await m.edit({
+          content: `> **  Your Tax Is: __${tax4}__**`,
+          components: [row2],
+        });
+        await i.deferUpdate();
+      }
+      if (i.customId === "tax_back") {
+        await m.edit({
+          content: `> **  Your Tax Is: __${tax}__**`,
+          components: [row],
+        });
+        await i.deferUpdate();
+      }
+    });
+  }
+});
+
+var TaxRoom = `1389605572667641949`;
+client.on("messageCreate", async (message) => {
+  let args = message.content.split(" ").slice(0).join(" ");
+  if (message.author.bot) return;
+  if (args.endsWith("m")) args = args.replace(/m/gi, "") * 1000000;
+  else if (args.endsWith("k")) args = args.replace(/k/gi, "") * 1000;
+  else if (args.endsWith("M")) args = args.replace(/M/gi, "") * 1000000;
+  else if (args.endsWith("K")) args = args.replace(/K/gi, "") * 1000;
+  else if (args.endsWith("b")) args = args.replace(/b/gi, "") * 1000000000;
+  else if (args.endsWith("B")) args = args.replace(/B/gi, "") * 1000000000;
+  if (!message.guild) return;
+  if (message.channel.id != TaxRoom) return;
+  let args2 = parseInt(args);
+  let tax = Math.floor((args2 * 20) / 19 + 1);
+  let tax2 = Math.floor((args2 * 20) / 19 + 1 - args2);
+  let tax3 = Math.floor((tax2 * 20) / 19 + 1);
+  let tax4 = Math.floor(tax2 + tax3 + args2);
+  if (!args2)
+    return message.reply(`
+    > ** Error It Must Be A Number ⚠⚠ **`);
+  if (isNaN(args2))
+    return message.reply(`
+    > ** Error It Must Be A Number ⚠⚠ **`);
+  if (args2 < 1)
+    return message.reply(`
+    > ** Error It Must Be Larger Than 1 ⚠⚠ **`);
+
+  let m = await message.reply({
+    content: `
+    > **  Your Tax Is : __${tax}__**`,
+  });
+});
+
+//  <========== Roles  Commands ==========> \\
+
+
+
+client.on("messageCreate", async (message) => {
+  if (message.content === prefix + "collect") {
+    const embed = new MessageEmbed()
+      .setColor(color)
+      .setTitle("Choose Your Role")
+      .setThumbnail(message.guild.iconURL({ dynamic: true}))
+      .setImage("")// حط صورة لل اخذ الرولات يعني شيء متعلق بل رولات
+      .setDescription(`حط الكلام الي تحتاجه هنا`);
+    
+
+    const button1 = new MessageButton()
+      .setCustomId("events") // نفس الشيء
+      .setLabel("Events News") // نفس الشيء
+      .setEmoji("<:Winner:1389344566296969237>") // نفس الشيء
+      .setStyle("PRIMARY"); // لاتغير اي شيء
+
+    const button2 = new MessageButton()
+      .setCustomId("news") // لاتغير اي شيء هنا اذا ماتفهم بل برمجه
+      .setLabel("Server News")// تقدر تغير اسم الرول مثلا هنا مكتوب اخبار السيرفر تقدر تحط عروض والخ
+      .setEmoji("<:News:1389610001571512332>") // تقدر تغير هذا الايموجي
+      .setStyle("PRIMARY"); // نفس الشيء
+
+    const button3 = new MessageButton()
+      .setCustomId("giveaway") // نفس الشيء
+      .setLabel("Giveaways") // نفس الشيء
+      .setEmoji("<:Giveaway:1389338285201031340>") // نفس الشيء 
+      .setStyle("PRIMARY"); // نفس الشيء تلعب فيه بدون خبره = ايرور ماله داعي
+
+    const row = new MessageActionRow().addComponents(button1, button2, button3);
+
+    message.reply({ embeds: [embed], components: [row] });
+  }
+});
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isButton()) return;
+
+  const roleId =
+    interaction.customId === "events"
+      ? EventsRole
+      : interaction.customId === "news"
+        ? NewsRoleId
+        : GiveawayRoleId;
+
+  const role = interaction.guild.roles.cache.get(roleId);
+
+  if (role) {
+    const member = interaction.member;
+    if (member.roles.cache.has(role.id)) {
+      await member.roles.remove(role);
+      await interaction.reply({
+        content: `Role ${role.name} removed!`,
+        ephemeral: true,
+      });
+    } else {
+      await member.roles.add(role);
+      await interaction.reply({
+        content: `Role ${role.name} added!`,
+        ephemeral: true,
+      });
+    }
+  }
+});
+
+// <========== The End & Error ==========>
+
+client.on("error", (e) => console.error(e));
+
+client.on("warn", (e) => console.warn(e));
+
+process.on("unhandledRejection", (e) => {
+  return console.log(e);
+});
+
+process.on("uncaughtException", (e) => {
+  return console.log(e);
+});
+
+process.on("uncaughtExceptionMonitor", (e) => {
+  return console.log(e);
 });
