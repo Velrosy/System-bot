@@ -691,6 +691,7 @@ client.on("messageCreate", async (message) => {
 
 client.on("messageCreate", async (message) => {
   if (message.content === prefix + "collect") {
+    if(!OwnerID.includes(message.member.id)) return;
     const embed = new MessageEmbed()
       .setColor(color)
       .setTitle("Choose Your Role")
