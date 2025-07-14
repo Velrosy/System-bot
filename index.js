@@ -397,4 +397,99 @@ client.on('messageCreate', message => {
         }
       });
     });
+client.on("messageCreate", async (message) => {
+  if (!message.content.startsWith(prefix) || message.author.bot) return;
+  const args = message.content.slice(prefix.length).trim().split(/ +/);
+  const command = args.shift().toLowerCase();
 
+  if (command === "come") {
+    const user = message.mentions.members.first();
+    if (!user) return message.reply(`**❗️ | I Can't Find This User!**`);
+    if (user.id === message.author.id)
+      return message.reply(`**❗️ | You Can't Send To Yourself!**`);
+    if (user.user.bot) return message.reply(`**❗️ | You Can't Send To Bot!**`);
+
+    let inv;
+    try {
+      inv = await message.channel.createInvite({ maxAge: 300, maxUses: 1 });
+    } catch (error) {
+      return message.reply(`**❌️ | Failed to create invite link!**`);
+    }
+
+    user
+      .send(
+        `** Sorry For Disturbance You Have Requested 
+
+CHANNEL : ${message.channel} 
+
+You Request By : ${message.guild.members.cache.get(message.author.id).displayName || message.author.tag} 
+
+link Server Link : ${inv.url} 
+**`,
+      )
+      .then(() => {
+        message
+          .reply({
+            embeds: [
+              new MessageEmbed()
+                .setDescription(`**⚙️ | Please Wait ....**`)
+                .setImage(line)
+                .setAuthor(message.author.username, message.author.avatarURL())
+                .setColor(color),
+            ],
+          })
+          .then((t) => {
+            setTimeout(
+              () =>
+                t.edit({
+                  embeds: [
+                    new MessageEmbed()
+                      .setDescription(
+                        `**✅️ | Done Message Has Been Send To ${user.displayName}**
+
+**⚙️ | Please Wait**`,
+                      )
+                      .setImage(line)
+                      .setAuthor(
+                        message.author.username,
+                        message.author.avatarURL(),
+                      )
+                      .setColor(color),
+                  ],
+                }),
+              1800,
+            );
+          });
+      })
+      .catch((y) => {
+        message
+          .reply({
+            embeds: [
+              new MessageEmbed()
+                .setDescription(`> **⚙️ | Please Wait ....**`)
+                .setImage(line)
+                .setAuthor(message.author.username, message.author.avatarURL())
+                .setColor(color),
+            ],
+          })
+          .then((t) => {
+            setTimeout(
+              () =>
+                t.edit({
+                  embeds: [
+                    new MessageEmbed()
+                      .setDescription(`❗️ | **Error __${y.message}__**`)
+                      .setImage(line)
+                      .setAuthor(
+                        message.author.username,
+                        message.author.avatarURL(),
+                      )
+                      .setColor(color),
+                  ],
+                }),
+              1800,
+            );
+          });
+      });
+  }
+});
