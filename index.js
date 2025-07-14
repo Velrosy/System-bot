@@ -1,3 +1,23 @@
+// <==================================> \\
+const {
+  Client,
+  Collection,
+  MessageActionRow,
+  MessageSelectMenu,
+  MessageButton,
+  Modal,
+  TextInputComponent,
+  MessageEmbed,
+} = require("discord.js");
+const fs = require(`node:fs`);
+const client = new Client({
+  intents: [3276799],
+}).setMaxListeners(0);
+const { joinVoiceChannel } = require("@discordjs/voice");
+const axios = require(`axios`);
+const { token , prefix } = require("./config.json")
+
+// <===== Ready =====> \\
 
 client.on("ready", async () => {
   //[]\\
@@ -31,3 +51,9 @@ client.on("ready", async () => {
 
   setInterval(updateStatus, updateIntervalInMilliseconds);
 });
+
+// <===== Login Token =====> \\
+
+client.login(token)
+
+// <=====  =====> \\
