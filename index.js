@@ -15,7 +15,7 @@ const client = new Client({
 }).setMaxListeners(0);
 const { joinVoiceChannel } = require("@discordjs/voice");
 const axios = require(`axios`);
-const { token , prefix , OwnerID } = require("./config.json")
+const { token , prefix , OwnerID , AdminID } = require("./config.json")
 
 // <===== Ready =====> \\
 
@@ -401,6 +401,8 @@ client.on('messageCreate', message => {
         }
       });
     });
+
+// <========== come command =========> \\
 client.on("messageCreate", async (message) => {
   if (!message.content.startsWith(prefix) || message.author.bot) return;
   const args = message.content.slice(prefix.length).trim().split(/ +/);
@@ -652,7 +654,7 @@ client.on("messageCreate", async (message) => {
   }
 });
 
-var TaxRoom = `1389605572667641949`;
+
 client.on("messageCreate", async (message) => {
   let args = message.content.split(" ").slice(0).join(" ");
   if (message.author.bot) return;
@@ -752,6 +754,76 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
 });
+
+//<========== help command ============> \\
+
+client.on('messageCreate', async message => {
+  if (message.content.startsWith(prefix + `help`)) {
+    let embed = new MessageEmbed()
+    .setColor('#0f0098')
+      .setAuthor(message.guild.name , message.guild.iconURL({dynamic : true}))   .setThumbnail(message.guild.iconURL({dynamic : true}))
+      .setFooter(message.guild.name , message.guild.iconURL({dynamic : true}))
+      .setTimestamp()
+      .setDescription(`**مرحباً** بك في قائمة الهيلب 👋
+
+    يرجي اختيار الزر المناسب لك للعرض الاوامر ؛`)
+    let help = new MessageActionRow()
+    .addComponents(
+    new MessageButton()
+    .setCustomId(`public`)
+    .setLabel(`General Commands.`)
+    .setEmoji(`👌`)
+    .setStyle(`SECONDARY`),
+      new MessageButton()
+    .setCustomId(`admin`)
+    .setLabel(`Admin Commands.`)
+    .setEmoji(`⚙️`)
+    .setStyle(`SECONDARY`),
+      new MessageButton()
+      .setCustomId(`owner`)
+      .setLabel(`Owner Commands.`)
+      .setEmoji(`👑`)
+      .setStyle(`SECONDARY`),
+      )
+
+    message.reply({ embeds: [embed], components: [help] })
+  }
+})
+
+
+client.on('interactionCreate', async interaction => {
+  if (interaction.customId === 'public') {
+    const user = await interaction.user.fetch();
+    await interaction.reply({ content: `**General Commands :**
+>  ${prefix}tax 
+>  ${prefix}ping
+>  ${prefix}server`, ephemeral: true });
+    }
+  }
+);
+client.on('interactionCreate', async interaction => {
+  if (interaction.customId === 'admin') {
+    if (!AdminID.includes(interaction.user.id)) return;
+    if (!OwnerID.includes(interaction.user.id)) return;
+    const user = await interaction.user.fetch();
+    await interaction.reply({ content: `**admin Commands :**
+> ${prefix}trn , لل إرسال رسالة تحويل بروبوت مع الضريبة 
+> ${prefix}come .`, ephemeral: true });
+    }
+  }
+);
+client.on('interactionCreate', async interaction => {
+  if (interaction.customId === 'owner') {
+       if (!OwnerID.includes(interaction.user.id)) return;
+    const user = await interaction.user.fetch();
+    await interaction.reply({ content: `**Owner Commands :**
+    > ${prefix}send-info لل إرسال سيلكت مينو المعلومات     
+    > ${prefix}collect لل إرسال ايمبد استلام الرولات
+    > ${prefix}embed لل إرسال رسالة ب ايمبد
+    `, ephemeral: true });
+    }
+  }
+);
 
 // <========== The End & Error ==========>
 
