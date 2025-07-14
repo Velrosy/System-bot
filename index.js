@@ -67,9 +67,58 @@ var BoostRoom = ``; // حط هنا ايدي روم البوست
 var TransferRoom = ``; // روم التحويلات
 var blacklistWords = ['','',''] 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const FeedBackRoom = ""; // ايدي روم الاراء
+const clientID = ""; // ايدي رول العميل
 
 // <====== Auto Command & message =======> \\
 
+//<=========== FeedBack Mesage =========> 
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return; 
+    if (message.channel.id !== FeedBackRoom) return;   
+
+    
+    if (!message.member) {
+        console.error("Member object not found.");
+        return;
+    }
+
+    
+    
+    const role = message.guild.roles.cache.get(clientID);
+
+    if (!role) {
+        console.error(`Role with ID ${clientID} not found.`);
+        return;
+    }
+
+    
+    if (!message.member.roles.cache.has(clientID)) {
+        
+        try {
+            await message.member.roles.add(role);
+            console.log(`Role ${clientID} added to ${message.member.user.tag}`);
+        } catch (error) {
+            console.error("Error adding the role:", error);
+        }
+    }
+
+    
+    message.reply({
+        embeds: [
+            new MessageEmbed()
+                .setColor(color) 
+                .setDescription(`
+> **Thanks __${message.member.displayName}__ For Your Feedback**
+> **And For Using ${message.guild.name}**
+> **We Appreciate Your Words** `)
+                .setImage(line)  
+                .setFooter("Velros")
+        ]
+    });
+});
+
+//<======== Auto line ==========>
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
   if (Channels.includes(message.channel.id)) {
@@ -77,6 +126,8 @@ client.on("messageCreate", async (message) => {
   }
 });
 
+
+//<=========== Auto tax ==========>
 client.on("messageCreate", async(message) => {
         let args = message.content
           .split(" ")
@@ -106,6 +157,7 @@ client.on("messageCreate", async(message) => {
     > **  Your Tax Is : __${tax}__**` });
     })
 
+//<========== Auto message ===========>
   client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
   if (message.content === "الكلمة") { // غير الكلمة حسب الكلمة  الي بدك البوت يرد عليها
