@@ -65,6 +65,8 @@ var TaxRoom = ``; // روم الضريبه التلقائيه
 const VoiceChannel = ""; // روم الفويس
 var BoostRoom = ``; // حط هنا ايدي روم البوست
 var TransferRoom = ``; // روم التحويلات
+var blacklistWords = ['','',''] 
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // <====== Auto Command & message =======> \\
 
@@ -322,3 +324,25 @@ client.on("messageCreate", (message) => {
     message.reply(`\`\`\`copy message and send it in <#${TransferRoom}> to complete order \n c ${message.author.id} ${tax}\`\`\``);
   }
 });
+
+// <======== Black list word ==========> \\\
+client.on('messageCreate', message => {
+      if (message.author.bot || message.member.permissions.has('ADMINISTRATOR')) return;
+
+      const content = message.content.split(' ');
+
+      if (!content[0]) return;
+
+      content.forEach(arg => {
+        if (!message) return;
+
+        const found = blacklistWords.filter(b => b === arg).map(m => m)[0];
+
+        if (found) {
+          message.author.send('> \`-\` **تم حذف رسالتك بسبب كلام غير لائق او اسم منتج غير مشفر**');
+          message.delete();
+          return;
+        }
+      });
+    });
+
